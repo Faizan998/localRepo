@@ -7,7 +7,7 @@ router.post("/save",userController.save);
 
 router.get("/fetch",userController.fetch);
 
-router.delete("/delete",userController.deleteUser);
+router.delete("/delete/:_id",userController.deleteUser);
 
 router.patch("/update",userController.updateUser);
 

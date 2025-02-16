@@ -43,19 +43,20 @@ export var fetch = async (req,res) => {
 }
 
 export var deleteUser = async (req,res) => {
-    var id = req.params.id;
-    var user = await userSchemaModel.find({_id:id});
-    if(user.length!=0){
-        let result = await userSchemaModel.deleteMany({_id:id});
-        if(result){
-            return res.status(201).json({"Message":"User Deleted"});
-        }else{
-            return res.status(404).json({error:"Server error"});
-        }
-    }else{
-        return res.status(500).json({error:"User Not Found"});
-    }
-}
+   var id = req.params._id;
+   var user = await userSchemaModel.find({_id:id});
+   if(user.length!=0){
+       let result = await userSchemaModel.deleteMany({_id:id});
+       if(result){
+           return res.status(201).json({"Message":"User Deleted Successfully"});
+       }else{
+           return res.status(404).json({error:"Server Error"});
+       }
+   }else{
+       return res.status(500).json({error:"User Not Found"});
+   }
+};
+
 
 export var updateUser = async (req,res) =>{
    var user = await userSchemaModel.find({_id:req.body._id});
