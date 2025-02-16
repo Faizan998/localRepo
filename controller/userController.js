@@ -74,35 +74,20 @@ export var updateUser = async (req,res) =>{
    }
 }
 
-
-export var login = async (req, res) => {
-   var { email, password } = req.body;
-
-   try {
-       var user = await userSchemaModel.findOne({ email });
-       if (!user) {
-           return res.status(400).json({ error: "User not found" });
-       }
-
-       // Verify Password
-       const isMatch = await bcrypt.compare(password, user.password);
-       if (!isMatch) {
-           return res.status(400).json({ error: "Invalid credentials" });
-       }
-
-       // Generate JWT Token
-       let payload = { "Subject": user.email };
-       let token = JWT.sign(payload, "qwevfgvqweqe");
-
-       // Update token in database
-       await userSchemaModel.updateOne({ _id: user._id }, { $set: { token } });
-
-       // Return user with token at the top
-       return res.status(201).json({ "token": token, "userDetails": { token, ...user._doc } });
-   } catch (error) {
-       return res.status(500).json({ error: "Server Error" });
+export var login  = async (req,res) => {
+   var userDetails = req.body;
+   userDetails = {...userDetails,  "status":1 };
+   var user = await userSchemaModel.find(userDetails);
+   if(user.length!=0){
+       let payload = {"Subject": user[0].email};
+       let token = JWT.sign(payload,"qwevfgvqweqe");
+       return res.status(201).json({"token":token, "userDetails":user[0]});
+   }else{
+       return res.status(500).json({error:"Token Error"});
    }
+   
 };
+
 
 export const authenticate = async (req, res, next) => {
    const token = req.header("Authorization");
