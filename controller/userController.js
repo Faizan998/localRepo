@@ -1,33 +1,37 @@
+import jwt from 'jsonwebtoken';
 import userSchemaModel from "../model/userModel.js";
 import "../model/connection.js";
 import url from 'url';
-import JWT from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+
+// import bcrypt from 'bcryptjs';
 
 export var save = async (req, res) => {
-    var { password, ...userDetails } = req.body;
-
-    // Hash Password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Generate unique _id
-    var userList = await userSchemaModel.find();
-    var l = userList.length;
-    var _id = l == 0 ? 1 : userList[l - 1]._id + 1;
-
-    // Generate JWT Token
-    let payload = { "Subject": userDetails.email };
-    let token = JWT.sign(payload, "qwevfgvqweqe");
-
-    // Construct user details with token at the top
-    userDetails = { token, _id, ...userDetails, password: hashedPassword, status: 0, role: "user", info: Date() };
-
     try {
+        var userDetails = req.body;
+
+        // Get existing users to generate a unique _id
+        var userList = await userSchemaModel.find();
+        var l = userList.length;
+        var _id = l === 0 ? 1 : userList[l - 1]._id + 1;
+
+        // Generate JWT Token
+        let payload = { email: userDetails.email };
+        let token = jwt.sign(payload, "qwevfgvqweqe", { expiresIn: "1h" });
+
+        // Construct user details with token
+        userDetails = { ...userDetails, _id, token, status: 0, role: "user", info: Date() };
+
+        // Store in MongoDB
         var user = await userSchemaModel.create(userDetails);
-        return res.status(201).json({ "Message": "User Registered Successfully", "user": user });
+
+        if (user) {
+            return res.status(201).json({ message: "User Registered Successfully", user });
+        } else {
+            return res.status(500).json({ error: "Server Error" });
+        }
     } catch (error) {
-        return res.status(500).json({ error: "Server Error" });
+        console.error("Error in User Registration:", error);
+        return res.status(500).json({ error: "Server Error", details: error.message });
     }
 };
 
