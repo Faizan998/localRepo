@@ -2,12 +2,14 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import userRouter from "./router/userRouter.js";
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 
 const app = express();
 const PORT = 3001
 
 dotenv.config();
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use("/user",userRouter);
